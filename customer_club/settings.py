@@ -41,11 +41,13 @@ INSTALLED_APPS = [
     # My Apps
     "accounts",
     "API",
+    "messaging",
+    "customers",
     # Third Party
     "rest_framework",
     "rest_framework_simplejwt",
     "corsheaders",
-    'rest_framework_simplejwt.token_blacklist',
+    "rest_framework_simplejwt.token_blacklist",
 ]
 
 REST_FRAMEWORK = {
