@@ -1,0 +1,6 @@
+/v1/login/                  # Login Endpoint
+/v1/logout/                 # Logout Endpoint
+/v1/customer/               # Customers Endpoint
+/v1/customer/<pk:int>/      # Customer Endpoint
+/v1/group/                  # Groups Endpoint (group of customers)
+/v1/group/<pk:int>/         # Group Endpoint
