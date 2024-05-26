@@ -76,6 +76,7 @@ class Customer(models.Model):
     firstname = models.CharField(max_length=255)
     lastname = models.CharField(max_length=255)
     phone_number = models.CharField(
+        max_length=11,
         validators=[
             phone_regex,
             phone_min_length,
