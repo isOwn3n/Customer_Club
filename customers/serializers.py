@@ -35,10 +35,9 @@ class CustomerSerializer(serializers.ModelSerializer):
     """A serializes for get customers data"""
 
     member_of = serializers.PrimaryKeyRelatedField(
-        queryset=models.Group.objects.filter(deleted_at__isnull=True),
-        many=True
+        queryset=models.Group.objects.filter(deleted_at__isnull=True).exclude(pk=1),
+        many=True,
     )
-
 
     class Meta:
         model = models.Customer
