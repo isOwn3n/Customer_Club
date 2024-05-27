@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils import timezone
 from django.core.validators import (
     RegexValidator,
     MinLengthValidator,
@@ -14,8 +15,23 @@ class Group(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(blank=True, null=True)
 
+    def delete(self, *args, **kwargs):
+        self.deleted_at = timezone.now()
+        self.save()
+
+    def restore(self):
+        self.deleted_at = None
+        self.save()
+
+    def is_deleted(self):
+        return self.deleted_at is not None
+
     class Meta:
         db_table = "customer_groups"
+        # Add an index to speed up queries for non-deleted objects
+        indexes = [
+            models.Index(fields=["deleted_at"]),
+        ]
 
     def __str__(self) -> str:
         return f"({self.group_english_name}) {self.group_persian_name}"
@@ -25,9 +41,9 @@ class CustomerManager(models.Manager):
     # def create
     def create_customer(
         self,
-        firstname,
-        lastname,
-        member_of,
+        firstname=None,
+        lastname=None,
+        member_of=None,
         points=0,
         birthday=None,
         wedding_date=None,
@@ -51,11 +67,17 @@ class CustomerManager(models.Manager):
             phone_number=phone_number,
         )
         customer.save()
-        for group in member_of:
-            try:
-                customer.member_of.add(group)
-            except:
-                ...
+
+        # All Customers Would be in (All) Group
+        initial_group = Group.objects.get(pk=1)
+        customer.member_of.add(initial_group)
+
+        if member_of is not None:
+            for group in member_of:
+                try:
+                    customer.member_of.add(group)
+                except:
+                    ...
 
         return customer
 
@@ -73,8 +95,8 @@ phone_max_length = MaxLengthValidator(
 
 
 class Customer(models.Model):
-    firstname = models.CharField(max_length=255)
-    lastname = models.CharField(max_length=255)
+    firstname = models.CharField(max_length=255, null=True, blank=True)
+    lastname = models.CharField(max_length=255, null=True, blank=True)
     phone_number = models.CharField(
         max_length=11,
         validators=[
@@ -94,8 +116,24 @@ class Customer(models.Model):
 
     objects = CustomerManager()
 
+    def delete(self, *args, **kwargs):
+        self.member_of.clear()
+        self.deleted_at = timezone.now()
+        self.save()
+
+    def restore(self):
+        self.deleted_at = None
+        self.save()
+
+    def is_deleted(self):
+        return self.deleted_at is not None
+
     class Meta:
         db_table = "customer"
+        # Add an index to speed up queries for non-deleted objects
+        indexes = [
+            models.Index(fields=["deleted_at"]),
+        ]
 
     def __str__(self) -> str:
         return f"{self.firstname} {self.lastname} ({self.phone_number})"
