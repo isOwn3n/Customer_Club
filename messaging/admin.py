@@ -1,3 +1,11 @@
 from django.contrib import admin
+from . import models
 
-# Register your models here.
+
+admin.site.register(models.Action)
+admin.site.register(models.SendLog)
+
+
+@admin.register(models.BuiltInMessage)
+class BuiltInMessageAdmin(admin.ModelAdmin):
+    exclude = ("deleted_at",)
