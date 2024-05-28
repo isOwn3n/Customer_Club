@@ -49,37 +49,55 @@ class CustomerManager(models.Manager):
         wedding_date=None,
         phone_number=None,
     ):
-        if not firstname:
-            raise ValueError("Customers must have a firstname")
-
-        if not lastname:
-            raise ValueError("Customers must have a lastname")
-
         if not phone_number:
             raise ValueError("Customers must have a phone_number")
+        try:
+            existing_customer = self.get(phone_number=phone_number)
+            if existing_customer.deleted_at is not None:
+                existing_customer.deleted_at = None
+                existing_customer.firstname = firstname
+                existing_customer.lastname = lastname
+                existing_customer.birthday = birthday
+                existing_customer.wedding_date = wedding_date
+                existing_customer.points = points
+                existing_customer.save()
 
-        customer = self.model(
-            firstname=firstname,
-            lastname=lastname,
-            points=points,
-            birthday=birthday,
-            wedding_date=wedding_date,
-            phone_number=phone_number,
-        )
-        customer.save()
+                # All Customers Have to be in (All) Group
+                initial_group = Group.objects.get(pk=1)
+                existing_customer.member_of.add(initial_group)
 
-        # All Customers Would be in (All) Group
-        initial_group = Group.objects.get(pk=1)
-        customer.member_of.add(initial_group)
+                if member_of is not None:
+                    for group in member_of:
+                        try:
+                            existing_customer.member_of.add(group)
+                        except:
+                            ...
+                return existing_customer
 
-        if member_of is not None:
-            for group in member_of:
-                try:
-                    customer.member_of.add(group)
-                except:
-                    ...
+            return existing_customer
+        except self.model.DoesNotExist:
+            customer = self.model(
+                firstname=firstname,
+                lastname=lastname,
+                points=points,
+                birthday=birthday,
+                wedding_date=wedding_date,
+                phone_number=phone_number,
+            )
+            customer.save()
 
-        return customer
+            # All Customers Would be in (All) Group
+            initial_group = Group.objects.get(pk=1)
+            customer.member_of.add(initial_group)
+
+            if member_of is not None:
+                for group in member_of:
+                    try:
+                        customer.member_of.add(group)
+                    except:
+                        ...
+
+            return customer
 
 
 phone_regex = RegexValidator(
