@@ -1,1 +1,2 @@
 - [ ] Dockerize Project.
+- [ ] Handle all exceptions on messaging app.
