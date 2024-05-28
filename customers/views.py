@@ -13,7 +13,7 @@ from . import models
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = models.Customer.objects.filter(deleted_at__isnull=True)
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -71,7 +71,7 @@ class CustomerRestoreViewSet(
 ):
     queryset = models.Customer.objects.filter(deleted_at__isnull=False)
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -101,7 +101,7 @@ class GroupRestoreViewSet(
     serializer_class = serializers.GroupSerializer
     queryset = models.Group.objects.filter(deleted_at__isnull=True)
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
 
     def destroy(self, request, *args, **kwargs):
         try:
@@ -117,7 +117,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.GroupSerializer
     queryset = models.Group.objects.filter(deleted_at__isnull=True)
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
 
     def destroy(self, request, *args, **kwargs):
         try:
@@ -132,7 +132,7 @@ class GroupViewSet(viewsets.ModelViewSet):
 class CustomerCountViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     queryset = models.Customer.objects.filter(deleted_at__isnull=True)
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    # permission_classes = (IsAuthenticated,)
 
     def list(self, request, *args, **kwargs):
         return Response(

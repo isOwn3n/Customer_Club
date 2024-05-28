@@ -1,4 +1,4 @@
-from send import sending
+from .send import sending
 
 
 def general_sending_message(message: str, customers_id: list[int]):
