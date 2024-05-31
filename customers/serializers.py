@@ -53,3 +53,9 @@ class CustomerSerializer(serializers.ModelSerializer):
             validated_data["points"] = 0
         customer = models.Customer.objects.create_customer(**validated_data)  # type: ignore
         return customer
+
+
+class CustomerCountSerializer(serializers.Serializer):
+    """A serializer for get customers count."""
+    count = serializers.IntegerField()
+
