@@ -1,4 +1,5 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.utils import timezone
 from django.core.validators import (
     RegexValidator,
@@ -16,6 +17,8 @@ class Group(models.Model):
     deleted_at = models.DateTimeField(blank=True, null=True)
 
     def delete(self, *args, **kwargs):
+        if self.id == 1:
+            raise ValidationError("Cannot delete this object.")
         self.deleted_at = timezone.now()
         self.save()
 
@@ -38,7 +41,6 @@ class Group(models.Model):
 
 
 class CustomerManager(models.Manager):
-    # def create
     def create_customer(
         self,
         firstname=None,
@@ -107,6 +109,7 @@ phone_regex = RegexValidator(
 phone_min_length = MinLengthValidator(
     11, "Phone number is too short, it must be 11 chars."
 )
+
 phone_max_length = MaxLengthValidator(
     11, "Phone number is too long, it must be 11 chars."
 )
