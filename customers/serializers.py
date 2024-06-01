@@ -57,5 +57,6 @@ class CustomerSerializer(serializers.ModelSerializer):
 
 class CustomerCountSerializer(serializers.Serializer):
     """A serializer for get customers count."""
+
     count = serializers.IntegerField()
 

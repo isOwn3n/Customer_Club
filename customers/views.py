@@ -92,11 +92,21 @@ class GroupViewSet(viewsets.ModelViewSet):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class CustomerCountViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+class CustomerCountViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
+    """This is a view to get all customers count on root url
+    and count of customers in each group with adding group id at the end of url"""
+
     queryset = models.Customer.objects.filter(deleted_at__isnull=True)
     authentication_classes = (JWTAuthentication,)
     serializer_class = serializers.CustomerCountSerializer
     # permission_classes = (IsAuthenticated,)
+
+    def retrieve(self, request, pk=None, *args, **kwargs):
+        group = models.Group.objects.get(pk=pk)
+        customer_count = group.customer_set.count()  # type: ignore
+        return Response({"count": customer_count}, status=status.HTTP_200_OK)
 
     def list(self, request, *args, **kwargs):
         return Response(
