@@ -95,6 +95,7 @@ def send_single_message(message: str, pk: int) -> dict[str, int]:
         raise models.Customer.DoesNotExist("Customer Does Not Exist.")
 
     if not check_sending_message_is_possible(message, 1):
+        send_remain_credit_warning()
         raise APIException("No enough money for sending this number of messages.", 418)
     firstname = customer.firstname if customer.firstname is not None else ""
     lastname = customer.lastname if customer.lastname is not None else ""
@@ -120,6 +121,7 @@ def send_array_of_messages(message: str, customers_id: list[int]) -> dict[str, i
     if customers:
         receptors = [i.phone_number for i in customers]
         if not check_sending_message_is_possible(message, len(receptors)):
+            send_remain_credit_warning()
             raise APIException(
                 "No enough money for sending this number of messages.", 418
             )
@@ -146,6 +148,7 @@ def send_one_message(message: str, customers_id: list[int]) -> dict[str, int]:
     if customers:
         receptors = [i.phone_number for i in customers]
         if not check_sending_message_is_possible(message, len(receptors)):
+            send_remain_credit_warning()
             raise APIException(
                 "No enough money for sending this number of messages.", 418
             )
