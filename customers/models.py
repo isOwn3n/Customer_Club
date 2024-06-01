@@ -17,7 +17,7 @@ class Group(models.Model):
     deleted_at = models.DateTimeField(blank=True, null=True)
 
     def delete(self, *args, **kwargs):
-        if self.id == 1: # type: ignore
+        if self.pk == 1:
             raise ValidationError("Cannot delete this object.")
         self.deleted_at = timezone.now()
         self.save()
