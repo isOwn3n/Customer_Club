@@ -25,7 +25,7 @@ class CustomerViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        customer = models.Customer.objects.create_customer(**serializer.validated_data)
+        customer = models.Customer.objects.create_customer(**serializer.validated_data)  # type: ignore
         serializer = serializers.CustomerGetSerializer(customer)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -47,11 +47,8 @@ class CustomerRestoreViewSet(
 
     def destroy(self, request, *args, **kwargs):
         try:
-            initial_group = models.Group.objects.get(pk=1)
             instance = self.get_object()
-            instance.deleted_at = None
-            instance.member_of.add(initial_group)
-            instance.save()
+            instance.restore()
             return Response(status=status.HTTP_204_NO_CONTENT)
         except models.Customer.DoesNotExist:
             raise NotFound("Customer not found.")
@@ -66,7 +63,7 @@ class GroupRestoreViewSet(
     serializer_class = serializers.GroupSerializer
     queryset = models.Group.objects.filter(deleted_at__isnull=True)
     authentication_classes = (JWTAuthentication,)
-    # permission_classes = (IsAuthenticated,)
+    # permission_classes = (permissions.IsSuperUser,)
 
     def destroy(self, request, *args, **kwargs):
         try:
