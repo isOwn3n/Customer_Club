@@ -1,4 +1,4 @@
-from .correctional import correct_receptor, make_message_readable
+from .correctional import make_message_readable
 
 from django.conf import settings
 from rest_framework.exceptions import APIException
@@ -157,31 +157,42 @@ def send_one_message(message: str, customers_id: list[int]) -> dict[str, int]:
     raise ValueError("No Customer Available")
 
 
-# TODO: get message from database in function it self
-def send_birthday_and_wedding_day_message(is_birthday: bool, customer_id):
-    if is_birthday:
-        try:
-            message = m_models.BuiltInMessage.objects.get(is_birthday=True)
-        except m_models.BuiltInMessage.DoesNotExist:
-            raise APIException("No Message Available")
-    else:
-        try:
-            message = m_models.BuiltInMessage.objects.get(is_wedding_date=True)
-        except m_models.BuiltInMessage.DoesNotExist:
-            raise APIException("No Message Available")
+def send_birthday_and_wedding_day_message(
+    is_birthday: bool, customer_id: list[int]
+) -> dict[str, int] | None:
+    try:
+        message = m_models.BuiltInMessage.objects.get(
+            is_birthday=is_birthday,
+            is_wedding_date=not is_birthday,
+        )
+    except m_models.BuiltInMessage.DoesNotExist:
+        return
 
     try:
         customer = models.Customer.objects.get(pk=customer_id)
     except m_models.BuiltInMessage.DoesNotExist:
-        raise APIException("No Message Available")
+        return
 
-    return send_message(message.message, customer.phone_number)
+    try:
+        return send_message(message.message, customer.phone_number)
+    except:
+        send_warning_message("پیام برای کاربر ارسال نشد.")
+        return
 
 
-def send_remaining_warning():
+def send_remain_credit_warning():
     """This is a function to send warning message to admin to charge kavenegar account."""
     admin_phone_number = settings.ADMIN_PHONE_NUMBER
     send_message("حساب خود را شارژ کنيد", admin_phone_number)
+
+
+def send_warning_message(message: str):
+    """This is a function to send warning message to admin."""
+    admin_phone_number = settings.ADMIN_PHONE_NUMBER
+    try:
+        send_message(message, admin_phone_number)
+    except:
+        ...
 
 
 def check_sending_message_is_possible(message: str, customer_count: int) -> bool:
