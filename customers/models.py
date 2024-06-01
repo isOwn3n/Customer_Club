@@ -17,7 +17,7 @@ class Group(models.Model):
     deleted_at = models.DateTimeField(blank=True, null=True)
 
     def delete(self, *args, **kwargs):
-        if self.id == 1:
+        if self.id == 1: # type: ignore
             raise ValidationError("Cannot delete this object.")
         self.deleted_at = timezone.now()
         self.save()
@@ -144,6 +144,8 @@ class Customer(models.Model):
 
     def restore(self):
         self.deleted_at = None
+        initial_group = Group.objects.get(pk=1)
+        self.member_of.add(initial_group)
         self.save()
 
     def is_deleted(self):
