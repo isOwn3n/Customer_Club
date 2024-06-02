@@ -13,7 +13,9 @@ class MeAPIView(APIView):
                 "id": user.id,
                 "username": user.username,
                 "email": user.email,
-                "permissions": list(user.get_all_permissions()),
+                "permissions": (
+                    list(user.get_all_permissions()) if not user.is_superuser else []
+                ),
                 "is_superuser": user.is_superuser,
                 "is_staff": user.is_staff,
             }
