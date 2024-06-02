@@ -45,7 +45,7 @@ class SendLog(models.Model):
         return f"{self.created_at.year}-{self.created_at.month}-{self.created_at.day} ({self.count})"
 
     class Meta:
-        db_table = "message_logs"
+        db_table = "chart_data"
 
 
 ACTION_CHOICES = (
@@ -84,3 +84,33 @@ class Action(models.Model):
 
     class Meta:
         db_table = "actions"
+
+
+REASON_CHOICES = (
+    ("BIRTHDAY", "Sent a message for birthday."),
+    ("WEDDING_DATE", "Sent a message for wedding date."),
+    ("GROUP_SINGLE_MESSAGE", "Sent a single message for a group/groups."),
+    (
+        "GROUP_ARRAY_MESSAGE",
+        "Sent an special message for each customer in group/groups (Array message).",
+    ),
+    ("SEND_A_MESSAGE", "Sent a message to a customer."),
+    ("REMAIN_CREDIT_MESSAGE", "Sent a warning message to a admin to recharge credit."),
+    ("WARNING_MESSAGE", "Sent a warning message to a admin to for a problem."),
+)
+
+
+class MessageLog(models.Model):
+    message_id = models.PositiveIntegerField()
+    status = models.IntegerField()
+    status_text = models.CharField(max_length=500)
+    message = models.TextField()
+    reason = models.CharField(max_length=255, choices=REASON_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"({self.status}, {self.message_id}): {self.message}"
+
+
+    class Meta:
+        db_table = "message_log"
