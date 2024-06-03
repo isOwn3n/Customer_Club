@@ -3,12 +3,32 @@ from rest_framework import serializers
 
 
 class UserSerializer(serializers.ModelSerializer):
+    """A serializer for user."""
+
     class Meta:
         model = User
-        fields = ["id", "username", "email", "first_name", "last_name"]
+        fields = [
+            "id",
+            "username",
+            "password",
+            "email",
+            "first_name",
+            "last_name",
+            "is_staff",
+            "is_superuser",
+        ]
         extra_kwargs = {
             "id": {
                 "read_only": True,
+            },
+            "is_staff": {
+                "read_only": True,
+            },
+            "is_superuser": {
+                "read_only": True,
+            },
+            "password": {
+                "write_only": True,
             },
         }
 
