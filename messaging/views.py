@@ -2,7 +2,7 @@ import re
 
 from rest_framework import views, parsers, status, viewsets, mixins
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
@@ -16,6 +16,7 @@ class FileUploadView(views.APIView):
     """This is an endpoint to upload file to import bulk customers from telegram."""
 
     parser_classes = [parsers.FileUploadParser, parsers.MultiPartParser]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def put(self, request, filename, format=None):
         """File form names would be like this two, file and name_include as boolean"""
@@ -39,7 +40,7 @@ class FileUploadView(views.APIView):
 class SendingMessageViewSet(views.APIView):
     serializer_class = serializers.SendingMessageSerializer
     authentication_classes = (JWTAuthentication,)
-    permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
@@ -52,4 +53,3 @@ class SendingMessageViewSet(views.APIView):
                 return Response(result, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        # general_sending_message()
