@@ -207,7 +207,9 @@ def send_birthday_and_wedding_day_message(
         return
 
     try:
-        return send_message(message.message, customer.phone_number)
+        if is_birthday:
+            return send_message(message.message, customer.phone_number, "BIRTHDAY")
+        return send_message(message.message, customer.phone_number, "WEDDING_DATE")
     except:
         send_warning_message("پیام برای کاربر ارسال نشد.")
         return
