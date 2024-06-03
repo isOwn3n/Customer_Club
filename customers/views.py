@@ -9,13 +9,13 @@ from django.core.exceptions import ValidationError
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from . import serializers
 from . import models
-from . import permissions
+from customer_club import permissions
 
 
 class CustomerViewSet(viewsets.ModelViewSet):
     queryset = models.Customer.objects.filter(deleted_at__isnull=True)
     authentication_classes = (JWTAuthentication,)
-    # permission_classes = (IsAuthenticated,)
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get_serializer_class(self):
         if self.action in ["create", "update", "partial_update"]:
@@ -79,7 +79,7 @@ class GroupViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.GroupSerializer
     queryset = models.Group.objects.filter(deleted_at__isnull=True)
     authentication_classes = (JWTAuthentication,)
-    # permission_classes = (IsAuthenticated,)
+    # permission_classes = [IsAuthenticated, IsAdminUser]
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
@@ -101,7 +101,7 @@ class CustomerCountViewSet(
     queryset = models.Customer.objects.filter(deleted_at__isnull=True)
     authentication_classes = (JWTAuthentication,)
     serializer_class = serializers.CustomerCountSerializer
-    # permission_classes = (IsAuthenticated,)
+    # permission_classes = [IsAuthenticated, IsAdminUser]
 
     def retrieve(self, request, pk=None, *args, **kwargs):
         group = models.Group.objects.get(pk=pk)
