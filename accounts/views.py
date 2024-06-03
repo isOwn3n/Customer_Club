@@ -1,22 +1,18 @@
-from rest_framework.views import APIView
+from rest_framework import viewsets, mixins, status
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.contrib.auth.models import User
+from . import serializers
 
 
-class MeAPIView(APIView):
+class MeViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
+    serializer_class = serializers.MeSerializer
+    queryset = User.objects.all()
 
-    def get(self, request):
+    def list(self, request, *args, **kwargs):
         user = request.user
-        return Response(
-            {
-                "id": user.id,
-                "username": user.username,
-                "email": user.email,
-                "permissions": (
-                    list(user.get_all_permissions()) if not user.is_superuser else []
-                ),
-                "is_superuser": user.is_superuser,
-                "is_staff": user.is_staff,
-            }
-        )
+        if str(user) == "AnonymousUser":
+            return Response({"detail": "Unauthorized"}, status=status.HTTP_401_UNAUTHORIZED)
+        serializer = serializers.MeSerializer(user)
+        return Response(serializer.data)
