@@ -37,12 +37,12 @@ class FileUploadView(views.APIView):
         return Response(result, status=status.HTTP_201_CREATED)
 
 
-class SendingMessageViewSet(views.APIView):
+class SendingMessageViewSet(viewsets.ViewSet):
     serializer_class = serializers.SendingMessageSerializer
     authentication_classes = (JWTAuthentication,)
     permission_classes = [IsAuthenticated, IsAdminUser]
 
-    def post(self, request, *args, **kwargs):
+    def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             validated_data = serializer.validated_data
@@ -53,3 +53,6 @@ class SendingMessageViewSet(views.APIView):
                 return Response(result, status=status.HTTP_201_CREATED)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class ActionViewSet
