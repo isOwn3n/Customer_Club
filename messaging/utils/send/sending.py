@@ -10,17 +10,30 @@ API_KEY = settings.KAVENEGAR_API_KEY
 SMS_SENDER = settings.KAVENEGAR_SMS_SENDER
 
 
-def send_message(message: str, receptor: str) -> dict[str, int]:
+def send_message(
+    message: str, receptor: str, message_reason: str | None
+) -> dict[str, int]:
     total_cost = 0
     try:
         api = kavenegar.KavenegarAPI(API_KEY)
         params = {"sender": SMS_SENDER, "receptor": receptor, "message": message}
         response = api.sms_send(params)
+        if message_reason:
+            for i in response:
+                m_models.MessageLog.objects.create(
+                    message_id=i.get("messageid"),
+                    status=i.get("status"),
+                    status_text=i.get("statustext"),
+                    message=i.get("message"),
+                    cost=i.get("cost"),
+                    receptor=i.get("receptor"),
+                    reason=message_reason,
+                )
         cost = [i["cost"] for i in response]
         total_cost += sum(cost)
         return {"cost": total_cost}
     except kavenegar.APIException as e:
-        e = e.decode()  # type: ignore
+        e = str(e)  # type: ignore
         if "418" in e:
             raise kavenegar.APIException(
                 {"message": "No credit Available", "status": 418}
@@ -44,7 +57,10 @@ def send_message(message: str, receptor: str) -> dict[str, int]:
 
 
 def send_array(
-    messages: list[str], receptors: list[str], senders: list[str]
+    messages: list[str],
+    receptors: list[str],
+    senders: list[str],
+    message_reason: str | None,
 ) -> dict[str, int]:
     try:
         total_cost = 0
@@ -60,6 +76,18 @@ def send_array(
             del messages[0:199]
 
             response = api.sms_sendarray(params)
+            if message_reason:
+                for i in response:
+                    m_models.MessageLog.objects.create(
+                        message_id=i.get("messageid"),
+                        status=i.get("status"),
+                        status_text=i.get("statustext"),
+                        message=i.get("message"),
+                        cost=i.get("cost"),
+                        receptor=i.get("receptor"),
+                        reason=message_reason,
+                    )
+
             cost = [i["cost"] for i in response]
             total_cost += sum(cost)
         return {"cost": total_cost}
@@ -110,7 +138,7 @@ def send_single_message(message: str, pk: int) -> dict[str, int]:
 
     if isinstance(changed_message, str):
         message = changed_message
-    return send_message(message, customer.phone_number)
+    return send_message(message, customer.phone_number, "SEND_A_MESSAGE")
 
 
 def send_array_of_messages(message: str, customers_id: list[int]) -> dict[str, int]:
@@ -136,7 +164,7 @@ def send_array_of_messages(message: str, customers_id: list[int]) -> dict[str, i
         messages = make_message_readable(message, customers_data)
         senders = SMS_SENDER * len(receptors)
         if isinstance(messages, list):
-            return send_array(messages, receptors, senders)
+            return send_array(messages, receptors, senders, "GROUP_ARRAY_MESSAGE")
 
     raise ValueError("No Customer Available")
 
@@ -155,7 +183,9 @@ def send_one_message(message: str, customers_id: list[int]) -> dict[str, int]:
 
         check_sending_message_is_possible(message, len(receptors))
         for _ in range(0, len(receptors), 200):
-            total_cost += send_message(message, ",".join(receptors[0:199]))["cost"]
+            total_cost += send_message(
+                message, ",".join(receptors[0:199]), "GROUP_SINGLE_MESSAGE"
+            )["cost"]
         return {"cost": total_cost}
     raise ValueError("No Customer Available")
 
@@ -186,21 +216,21 @@ def send_birthday_and_wedding_day_message(
 def send_remain_credit_warning():
     """This is a function to send warning message to admin to charge kavenegar account."""
     admin_phone_number = settings.ADMIN_PHONE_NUMBER
-    send_message("حساب خود را شارژ کنيد", admin_phone_number)
+    send_message("حساب خود را شارژ کنيد", admin_phone_number, "REMAIN_CREDIT_MESSAGE")
 
 
 def send_warning_message(message: str):
     """This is a function to send warning message to admin."""
     admin_phone_number = settings.ADMIN_PHONE_NUMBER
     try:
-        send_message(message, admin_phone_number)
+        send_message(message, admin_phone_number, "WARNING_MESSAGE")
     except:
         ...
 
 
 def check_sending_message_is_possible(message: str, customer_count: int) -> bool:
     message = message.replace("%name", "آقای").replace("%fullname", "فلانی")
-    response = send_message(message, "09123456789")
+    response = send_message(message, "09123456789", None)
     credit = get_kavenegar_info()
     if response["cost"] * customer_count > credit - 10000:
         raise APIException("No credit enough!")

@@ -105,6 +105,8 @@ class MessageLog(models.Model):
     status = models.IntegerField()
     status_text = models.CharField(max_length=500)
     message = models.TextField()
+    cost = models.IntegerField()
+    receptor = models.CharField(max_length=11)
     reason = models.CharField(max_length=255, choices=REASON_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
 
