@@ -33,6 +33,16 @@ class UserSerializer(serializers.ModelSerializer):
         }
 
 
+class ChangePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+    user_id = serializers.IntegerField(required=False)
+
+class ChangePasswordByAdminSerializer(serializers.Serializer):
+    new_password = serializers.CharField(required=True)
+    user_id = serializers.IntegerField(required=False)
+
+
 class MeSerializer(serializers.ModelSerializer):
     permissions = serializers.SerializerMethodField()
 

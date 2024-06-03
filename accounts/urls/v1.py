@@ -13,6 +13,10 @@ from rest_framework_simplejwt.views import (
 router = DefaultRouter()
 router.register("me", views.MeViewSet, "me")
 router.register("user", views.UserViewSet)
+router.register("change-password", views.ChangePasswordViewSet, "change-password")
+router.register(
+    "admin-change-password", views.ChangePasswordByAdminViewSet, "admin-change-password"
+)
 
 urlpatterns = [
     path("login/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
