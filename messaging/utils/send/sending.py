@@ -216,10 +216,16 @@ def send_warning_message(message: str):
         ...
 
 
-def check_sending_message_is_possible(message: str, customer_count: int) -> tuple[bool, int] | bool:
+def check_sending_message_is_possible(
+    message: str, customer_count: int
+) -> tuple[bool, int] | bool:
     if len(message) == 0 or customer_count == 0:
         return False
-    message = message.replace("%name", "آقای").replace("%fullname", "فلانی")
+    message = (
+        message.replace("%name", "آقای")
+        .replace("%fullname", "آقای فلانی")
+        .replace("%lastname", "فلانی")
+    )
     response = send_message(message, "09123456789", None)
     credit = get_kavenegar_info()
     if response["cost"] * customer_count > credit - 10000:
