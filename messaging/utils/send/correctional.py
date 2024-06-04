@@ -19,32 +19,42 @@ def make_message_readable(
     if isinstance(message, list):
         if isinstance(customer_data, dict):
             messages = [
-                i.replace("%name", customer_data.get("name", "")).replace(
+                i.replace("%name", customer_data.get("name", ""))
+                .replace(
                     "%fullname",
                     customer_data.get("fullname", ""),
                 )
+                .replace("%lastname", customer_data.get("lastname", ""))
                 for i in message
             ]
             return ",".join(messages)
         messages = [
-            m.replace("%name", c.get("name", "")).replace(
+            m.replace("%name", c.get("name", ""))
+            .replace(
                 "%fullname",
                 c.get("fullname", ""),
             )
+            .replace("%lastname", c.get("lastname", ""))
             for m, c in zip(message, customer_data)
         ]
         return ",".join(messages)
     if isinstance(message, str):
         if isinstance(customer_data, list):
             messages = [
-                message.replace("%name", c.get("name", "")).replace(
+                message.replace("%name", c.get("name", ""))
+                .replace(
                     "%fullname",
                     c.get("fullname", ""),
                 )
+                .replace("%lastname", c.get("lastname", ""))
                 for c in customer_data
             ]
             return messages
-        return message.replace("%name", customer_data.get("name", "")).replace(
-            "%fullname",
-            customer_data.get("fullname", ""),
+        return (
+            message.replace("%name", customer_data.get("name", ""))
+            .replace(
+                "%fullname",
+                customer_data.get("fullname", ""),
+            )
+            .replace("%lastname", customer_data.get("lastname", ""))
         )
