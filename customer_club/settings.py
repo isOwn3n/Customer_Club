@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework_simplejwt.token_blacklist",
     "drf_yasg",
+    'django_celery_results',
 ]
 
 REST_FRAMEWORK = {
@@ -162,6 +163,14 @@ KAVENEGAR_API_KEY = "YOUR_KAVENEGAR_API_KEY"
 KAVENEGAR_SMS_SENDER = "YOUR_SENDER_IN_KAVENEGAR"
 ADMIN_PHONE_NUMBER = "09123456789"
 SENDING_HAPPY_MESSAGES_TIME = 8
+
+# Celery Configuration Options
+CELERY_TIMEZONE = "Asia/Tehran"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60
+CELERY_BROKER_URL = "redis://localhost:6379"
+CELERY_RESULT_BACKEND = "redis://localhost:6379"
+
 
 try:
     from .local_settings import *
