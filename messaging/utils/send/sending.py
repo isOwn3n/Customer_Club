@@ -122,9 +122,6 @@ def send_single_message(message: str, pk: int) -> dict[str, int]:
     except models.Customer.DoesNotExist:
         raise models.Customer.DoesNotExist("Customer Does Not Exist.")
 
-    if not check_sending_message_is_possible(message, 1):
-        send_remain_credit_warning()
-        raise APIException("No enough money for sending this number of messages.", 418)
     firstname = customer.firstname if customer.firstname is not None else ""
     lastname = customer.lastname if customer.lastname is not None else ""
     changed_message = make_message_readable(
@@ -148,11 +145,6 @@ def send_array_of_messages(message: str, customers_id: list[int]) -> dict[str, i
     customers = models.Customer.objects.filter(id__in=customers_id)
     if customers:
         receptors = [i.phone_number for i in customers]
-        if not check_sending_message_is_possible(message, len(receptors)):
-            send_remain_credit_warning()
-            raise APIException(
-                "No enough money for sending this number of messages.", 418
-            )
         customers_data = [
             {
                 "name": c.firstname,
@@ -175,13 +167,7 @@ def send_one_message(message: str, customers_id: list[int]) -> dict[str, int]:
     customers = models.Customer.objects.filter(id__in=customers_id)
     if customers:
         receptors = [i.phone_number for i in customers]
-        if not check_sending_message_is_possible(message, len(receptors)):
-            send_remain_credit_warning()
-            raise APIException(
-                "No enough money for sending this number of messages.", 418
-            )
 
-        check_sending_message_is_possible(message, len(receptors))
         for _ in range(0, len(receptors), 200):
             total_cost += send_message(
                 message, ",".join(receptors[0:199]), "GROUP_SINGLE_MESSAGE"
@@ -230,13 +216,15 @@ def send_warning_message(message: str):
         ...
 
 
-def check_sending_message_is_possible(message: str, customer_count: int) -> bool:
+def check_sending_message_is_possible(message: str, customer_count: int) -> tuple[bool, int] | bool:
+    if len(message) == 0 or customer_count == 0:
+        return False
     message = message.replace("%name", "آقای").replace("%fullname", "فلانی")
     response = send_message(message, "09123456789", None)
     credit = get_kavenegar_info()
     if response["cost"] * customer_count > credit - 10000:
-        raise APIException("No credit enough!")
-    return True
+        return False
+    return (True, response["cost"])
 
 
 def get_kavenegar_info() -> int:
