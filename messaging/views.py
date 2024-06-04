@@ -3,12 +3,12 @@ import re
 from rest_framework import views, parsers, status, viewsets, mixins
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
-
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from messaging.utils import convert_file
+from messaging.utils.send.sending import check_sending_message_is_possible
+from messaging.tasks import send
 
-from messaging.utils.send_message import general_sending_message
 from . import serializers
 
 
@@ -46,12 +46,13 @@ class SendingMessageViewSet(viewsets.ViewSet):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             validated_data = serializer.validated_data
-            message = validated_data.get("message")  # type: ignore
-            customers_id = validated_data.get("customers_id")  # type: ignore
-            if isinstance(message, str) and isinstance(customers_id, list):
-                result = general_sending_message(message, customers_id)
-                return Response(result, status=status.HTTP_201_CREATED)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            message = validated_data.get("message", "")  # type: ignore
+            customers_id = validated_data.get("customers_id", "")  # type: ignore
+            check_possibility = check_sending_message_is_possible(message, len(customers_id))
+            if isinstance(check_possibility, tuple):
+                send.send_message.delay(message, customers_id)
+                return Response({"cost": check_possibility[1]}, status=status.HTTP_200_OK)
+            return Response(status=status.HTTP_418_IM_A_TEAPOT)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
