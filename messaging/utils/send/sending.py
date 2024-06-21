@@ -1,3 +1,4 @@
+from typing import Literal
 from .correctional import make_message_readable
 
 from django.conf import settings
@@ -138,6 +139,10 @@ def send_single_message(message: str, pk: int) -> dict[str, int]:
     return send_message(message, customer.phone_number, "SEND_A_MESSAGE")
 
 
+def send_single_message_to_not_customer(message: str, receptor: str):
+    return send_message(message, receptor, "SEND_A_MESSAGE_TO_A_NOT_CUSTOMER")
+
+
 def send_array_of_messages(message: str, customers_id: list[int]) -> dict[str, int]:
     """this is a function to send a lot of diffrent messages."""
     if not "%name" in message and not "%fullname" in message:
@@ -218,7 +223,7 @@ def send_warning_message(message: str):
 
 def check_sending_message_is_possible(
     message: str, customer_count: int
-) -> tuple[bool, int] | bool:
+) -> tuple[Literal[True], int] | Literal[False]:
     if len(message) == 0 or customer_count == 0:
         return False
     message = (
