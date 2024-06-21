@@ -5,6 +5,7 @@ from rest_framework.test import APIClient
 from mixer.backend.django import mixer
 from customers.models import Customer, Group
 from customers.serializers import CustomerSerializer, GroupSerializer
+
 # from customers.views import CustomerViewSet, GroupViewSet
 
 

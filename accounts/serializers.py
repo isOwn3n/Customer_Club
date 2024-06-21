@@ -38,6 +38,7 @@ class ChangePasswordSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
     user_id = serializers.IntegerField(required=False)
 
+
 class ChangePasswordByAdminSerializer(serializers.Serializer):
     new_password = serializers.CharField(required=True)
     user_id = serializers.IntegerField(required=False)

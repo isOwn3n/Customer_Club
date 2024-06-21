@@ -4,6 +4,7 @@ from django.db.models.manager import BaseManager
 
 from . import sending
 
+
 def get_all_customers_they_birthday_is_today():
     customers = models.Customer.objects.filter(
         birthday=timezone.now(),
@@ -18,6 +19,7 @@ def get_all_customers_they_wedding_data_is_today():
         deleted_at__is_null=None,
     )
     return customers
+
 
 def send_message_for_birthday(customers: BaseManager[models.Customer]):
     for i in customers:
