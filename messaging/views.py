@@ -5,9 +5,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework_simplejwt.authentication import JWTAuthentication
 
+from customer_club.permissions import IsSuperUser
 from messaging.utils import convert_file
 from messaging.utils.send.sending import check_sending_message_is_possible
 from messaging.tasks import send
+from messaging.utils.send_message import get_all_customers_in_a_group
 
 from . import serializers
 
@@ -47,13 +49,27 @@ class SendingMessageViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             validated_data = serializer.validated_data
             message = validated_data.get("message", "")  # type: ignore
-            customers_id = validated_data.get("customers_id", "")  # type: ignore
-            check_possibility = check_sending_message_is_possible(message, len(customers_id))
+
+            customers_id = validated_data.get("customers_id", [])  # type: ignore
+            groups_id = validated_data.get("groups_id", [])  # type: ignore
+
+            new_customers = get_all_customers_in_a_group(groups_id)
+            customers_id += new_customers
+
+            check_possibility = check_sending_message_is_possible(
+                message, len(customers_id)
+            )
             if isinstance(check_possibility, tuple):
                 send.send_message.delay(message, customers_id)
-                return Response({"cost": check_possibility[1]}, status=status.HTTP_200_OK)
+                return Response(
+                    {"cost": check_possibility[1]}, status=status.HTTP_200_OK
+                )
             return Response(status=status.HTTP_418_IM_A_TEAPOT)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# class ActionViewSet
+# TODO: Create an endpoint to user (admin) be able to send message to a custom phone number
+class SendingMessageToNotCustomerViewSet(viewsets.ViewSet):
+    serializer_class = serializers.SendingMessageSerializer
+    # authentication_classes = (JWTAuthentication,)
+    # permission_classes = [IsSuperUser]

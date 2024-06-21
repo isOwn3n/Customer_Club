@@ -97,6 +97,7 @@ REASON_CHOICES = (
     ("SEND_A_MESSAGE", "Sent a message to a customer."),
     ("REMAIN_CREDIT_MESSAGE", "Sent a warning message to a admin to recharge credit."),
     ("WARNING_MESSAGE", "Sent a warning message to a admin to for a problem."),
+    ("SEND_A_MESSAGE_TO_A_NOT_CUSTOMER", "Sent a message to not in db contact."),
 )
 
 
@@ -112,7 +113,6 @@ class MessageLog(models.Model):
 
     def __str__(self):
         return f"({self.status}, {self.message_id}): {self.message}"
-
 
     class Meta:
         db_table = "message_log"
